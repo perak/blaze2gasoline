@@ -346,7 +346,7 @@ var blaze2gasoline = function(html, js) {
 	js = js ? js.trim() : "";
 
 	if(js) {
-		var estree = acorn.parse(js, {});
+		var estree = acorn.parse(js, { sourceType: "module" });
 
 		gas.templates.map(function(template) {
 			var code = {
