@@ -287,7 +287,7 @@ var blaze2gasoline = function(html, js) {
 				estree.expression.arguments[0].properties.map(function(evt) {
 					if(evt.key && evt.value && evt.value.body) {
 						res.events.push({
-							event: evt.key.value,
+							event: evt.key.value || evt.key.name,
 							code: js.substring(evt.value.body.start + 1, evt.value.body.end - 1)
 						});
 					}
@@ -311,7 +311,7 @@ var blaze2gasoline = function(html, js) {
 				estree.expression.arguments[0].properties.map(function(evt) {
 					if(evt.key && evt.value && evt.value.body) {
 						var helper = {};
-						helper.name = evt.key.value;
+						helper.name = evt.key.value || evt.key.name;
 						helper.arguments = [];
 						if(evt.value.params) {
 							evt.value.params.map(function(param) {
