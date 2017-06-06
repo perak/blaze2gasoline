@@ -1,7 +1,7 @@
-const htmlparser = require("htmlparser");
-const acorn = require("acorn");
-const strUtils = require("./string-utils");
-const gasoline = require("gasoline-turbo");
+var htmlparser = require("htmlparser");
+var acorn = require("acorn");
+var strUtils = require("./string-utils");
+var gasoline = require("gasoline-turbo");
 
 var blaze2gasoline = function(html, js) {
 	// inclusion
