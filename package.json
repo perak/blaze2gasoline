@@ -1,6 +1,6 @@
 {
   "name": "blaze2gasoline",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Converts Blaze template (html and js code) to json - input file for gasoline-turbo",
   "main": "blaze2gasoline.js",
   "scripts": {
@@ -30,7 +30,7 @@
     "path": "^0.12.7",
     "replace-ext": "^1.0.0",
     "acorn": "^4.0.11",
-    "gasoline-turbo": "^0.1.9",
+    "gasoline-turbo": "^0.2.2",
     "htmlparser": "^1.7.7"
   }
 }
