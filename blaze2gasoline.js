@@ -487,7 +487,7 @@ var blaze2gasoline = function(html, js) {
 							code: event.code
 						});
 
-						var selectedObjects = gasoline.findObjectsBySelector(gas, eventSelector);
+						var selectedObjects = gasoline.gasoline.findObjectsBySelector(gas, eventSelector);
 						if(selectedObjects) {
 							selectedObjects.map(function(selectedObject) {
 								selectedObject.events = selectedObject.events || [];
