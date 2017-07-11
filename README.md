@@ -11,6 +11,18 @@ Project status
 
 Under development - just started.
 
+Example apps
+============
+
+### Meteor Kitchen
+
+- <a href="https://www.meteorkitchen.com" target="_blank">Meteor Kitchen UI</a> is using blaze2gasoline. See <a href="https://www.youtube.com/watch?v=8Gr2oioZDG8" target="_blank">Preview video at Youtube</a>.
+
+
+### Blaze to React online converter
+
+- <a href="https://blaze2react.meteorcluster.com/" target="_blank">blaze2react</a> You can find source code (kitchen project) is <a href="https://www.meteorkitchen.com/app_details/about/zxuskE3GStoffJWmn" target="_blank">here</a>.
+
 
 Usage
 =====
@@ -24,7 +36,7 @@ blaze2gasoline -i input.html -o output.json
 	-w, --overwrite	Overwrite existing output file
 ```
 
-Or you can add it to your Meteor application by running `meteor npm install --save blaze2gasoline` and in your code:
+Or you can add it to your node.js (or Meteor) application by running `meteor npm install --save blaze2gasoline` and in your code:
 
 ```js
 const b2g = require("blaze2gasoline");
