@@ -123,7 +123,7 @@ var blaze2gasoline = function(html, js) {
 	tags = html.match(/{{else}}/g);
 	if(tags) {
 		tags.map(function(tag) {
-			html = html.split(tag).join("<CONDITION /><CONDITION>");
+			html = html.split(tag).join("</CONDITION><CONDITION>");
 		});
 	}
 	tags = html.match(/{{\/if}}/g);
@@ -167,169 +167,176 @@ var blaze2gasoline = function(html, js) {
 			return;
 		}
 
+		var skipNext = false;
 		dom.map(function(node, nodeIndex) {
-			var gasNode = null;
-			switch(node.type) {
-				case "tag": {
+			if(skipNext) {
+				skipNext = false;
+			} else {
+				var gasNode = null;
+				switch(node.type) {
+					case "tag": {
 
-					switch(node.name) {
-						case "template": {
-							var template = {};
-							template.type = "template";
-							template.name = (node.attribs && node.attribs["name"]) ? node.attribs["name"] : "TEMPLATE_NAME";
-							template.children = [];
-							gas.templates.push(template);
-							gasNode = template;
-						}; break;
-						case "CONDITION": {
-							if(node.attribs) {
-								var element = {};
-								element.type = "condition";
-								element.condition = "";
-								var inverted = false;
-								for(var attrName in node.attribs) {
-									if(attrName == "INVERTED") {
-										inverted = true;
-									} else {
-										if(element.condition) {
-											element.condition += " ";
+						switch(node.name) {
+							case "template": {
+								var template = {};
+								template.type = "template";
+								template.name = (node.attribs && node.attribs["name"]) ? node.attribs["name"] : "TEMPLATE_NAME";
+								template.children = [];
+								gas.templates.push(template);
+								gasNode = template;
+							}; break;
+							case "CONDITION": {
+								if(node.attribs) {
+									var element = {};
+									element.type = "condition";
+									element.condition = "";
+									var inverted = false;
+									for(var attrName in node.attribs) {
+										if(attrName == "INVERTED") {
+											inverted = true;
+										} else {
+											if(element.condition) {
+												element.condition += " ";
+											}
+											element.condition += attrName;
+											if(node.attribs[attrName] && node.attribs[attrName] != attrName) {
+												element.condition += "=" + node.attribs[attrName];
+											}
 										}
-										element.condition += attrName;
+									}
+									element.children = [];
+
+									var conditionTrue = {
+										type: "condition-true",
+										children: []
+									};
+
+									var conditionFalse = {
+										type: "condition-false",
+										children: []
+									};
+
+									if(inverted) {
+										conditionTrue.type = "condition-false";
+										conditionFalse.type = "condition-true";
+
+										element.children.push(conditionFalse);
+										element.children.push(conditionTrue);
+									} else {
+										element.children.push(conditionTrue);
+										element.children.push(conditionFalse);									
+									}
+
+									gasObject.children.push(element);
+									gasNode = conditionTrue;
+
+									if(dom[nodeIndex + 1]) {
+										var nextNode = dom[nodeIndex + 1];
+										if(nextNode.type == "tag" && nextNode.name == "CONDITION" && (!nextNode.attribs || !nextNode.attribs.length)) {
+											skipNext = true;
+											if(nextNode.children) {
+												dom2gas(nextNode.children, conditionFalse);
+											}
+										}
+									}
+								}
+							}; break;
+
+							case "LOOP": {
+								var element = {};
+								element.type = "loop";
+								element.dataset = "";
+								if(node.attribs) {
+									for(var attrName in node.attribs) {
+										if(element.dataset) {
+											element.dataset += " ";
+										}
+										element.dataset += attrName;
 										if(node.attribs[attrName] && node.attribs[attrName] != attrName) {
-											element.condition += "=" + node.attribs[attrName];
+											element.dataset += "=" + node.attribs[attrName];
 										}
 									}
 								}
 								element.children = [];
 
-								var conditionTrue = {
-									type: "condition-true",
-									children: []
-								};
-
-								var conditionFalse = {
-									type: "condition-false",
-									children: []
-								};
-
-								if(inverted) {
-									conditionTrue.type = "condition-false";
-									conditionFalse.type = "condition-true";
-
-									element.children.push(conditionFalse);
-									element.children.push(conditionTrue);
-								} else {
-									element.children.push(conditionTrue);
-									element.children.push(conditionFalse);									
-								}
-
 								gasObject.children.push(element);
-								gasNode = conditionTrue;
+								gasNode = element;
+							}; break;
 
-								if(dom[nodeIndex + 1]) {
-									var nextNode = dom[nodeIndex + 1];
-									if(nextNode.type == "tag" && nextNode.name == "CONDITION" && !nextNode.attribs) {
-										if(nextNode.children) {
-											dom2gas(nextNode.children, conditionFalse);
+							case "INCLUSION": {
+								var element = {};
+								element.type = "inclusion";
+								element.template = "";
+								if(node.attribs) {
+									for(var attrName in node.attribs) {
+										if(element.template) {
+											element.template += " ";
+										}
+										element.template += attrName;
+										if(node.attribs[attrName] && node.attribs[attrName] != attrName) {
+											element.template += "=" + node.attribs[attrName];
 										}
 									}
 								}
-							}
-						}; break;
+								element.children = [];
+								gasObject.children.push(element);
+								gasNode = element;
+							}; break;
 
-						case "LOOP": {
-							var element = {};
-							element.type = "loop";
-							element.dataset = "";
-							if(node.attribs) {
-								for(var attrName in node.attribs) {
-									if(element.dataset) {
-										element.dataset += " ";
-									}
-									element.dataset += attrName;
-									if(node.attribs[attrName] && node.attribs[attrName] != attrName) {
-										element.dataset += "=" + node.attribs[attrName];
+							case "HELPER-HTML": {
+								var element = {};
+								element.type = "text";
+								element.text = "";
+								if(node.attribs) {
+									for(var attrName in node.attribs) {
+										if(element.text) {
+											element.text += " ";
+										}
+										element.text += attrName;
+										if(node.attribs[attrName] && node.attribs[attrName] != attrName) {
+											element.text += "=" + node.attribs[attrName];
+										}
 									}
 								}
-							}
-							element.children = [];
+								if(element.text) {
+									element.text = "{{" + element.text + "}}";
+								}
+								element.children = [];
+								gasObject.children.push(element);
+								gasNode = element;
+							}; break;
 
-							gasObject.children.push(element);
-							gasNode = element;
-						}; break;
-
-						case "INCLUSION": {
-							var element = {};
-							element.type = "inclusion";
-							element.template = "";
-							if(node.attribs) {
-								for(var attrName in node.attribs) {
-									if(element.template) {
-										element.template += " ";
-									}
-									element.template += attrName;
-									if(node.attribs[attrName] && node.attribs[attrName] != attrName) {
-										element.template += "=" + node.attribs[attrName];
+							default: {
+								var element = {};
+								element.type = "html";
+								element.element = node.name;
+								element.attributes = [];
+								element.children = [];
+								if(node.attribs) {
+									for(var attrName in node.attribs) {
+										element.attributes.push({
+											name: attrName,
+											value: node.attribs[attrName]
+										});
 									}
 								}
+								gasObject.children.push(element);
+								gasNode = element;
 							}
-							element.children = [];
-							gasObject.children.push(element);
-							gasNode = element;
-						}; break;
-
-						case "HELPER-HTML": {
-							var element = {};
-							element.type = "text";
-							element.text = "";
-							if(node.attribs) {
-								for(var attrName in node.attribs) {
-									if(element.text) {
-										element.text += " ";
-									}
-									element.text += attrName;
-									if(node.attribs[attrName] && node.attribs[attrName] != attrName) {
-										element.text += "=" + node.attribs[attrName];
-									}
-								}
-							}
-							if(element.text) {
-								element.text = "{{" + element.text + "}}";
-							}
-							element.children = [];
-							gasObject.children.push(element);
-							gasNode = element;
-						}; break;
-
-						default: {
-							var element = {};
-							element.type = "html";
-							element.element = node.name;
-							element.attributes = [];
-							element.children = [];
-							if(node.attribs) {
-								for(var attrName in node.attribs) {
-									element.attributes.push({
-										name: attrName,
-										value: node.attribs[attrName]
-									});
-								}
-							}
-							gasObject.children.push(element);
-							gasNode = element;
 						}
-					}
-					if(node.children) {
-						dom2gas(node.children, gasNode || gas.naked);
-					}
-				}; break;
-				case "text": {
-					var element = {};
-					element.type = "text";
-					element.text = node.data;
-					gasObject.children.push(element);
-					gasNode = element;
-				}; break;
+						if(node.children) {
+							dom2gas(node.children, gasNode || gas.naked);
+						}
+					}; break;
+
+					case "text": {
+						var element = {};
+						element.type = "text";
+						element.text = node.data;
+						gasObject.children.push(element);
+						gasNode = element;
+					}; break;
+				}
 			}
 		});
 	};
