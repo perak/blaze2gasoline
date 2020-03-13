@@ -25,7 +25,7 @@
   "author": "Petar Korponaić <petar.korponaic@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "acorn": "^4.0.11",
+    "acorn": "^7.1.1",
     "command-line-args": "^3.0.5",
     "fs": "0.0.1-security",
     "gasoline-turbo": "^0.3.4",
